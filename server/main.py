@@ -7,6 +7,7 @@ import utils
 import models, schemas
 from database import SessionLocal, engine
 import os
+from PyPDF2 import PdfReader 
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -27,7 +28,6 @@ def read_root():
 @app.post("/upload-doc")
 async def upload_file(file:UploadFile = File(...),db:Session =Depends(get_db)):
     try:
-        # contents = file.file.read()
         file_location = f"documents/{file.filename}"
         os.makedirs("documents",exist_ok=True)
         with open(file_location,"wb") as f:
@@ -37,11 +37,26 @@ async def upload_file(file:UploadFile = File(...),db:Session =Depends(get_db)):
      # Create a new document entry in the database
     document_data = {
         "filename": file.filename,
-        "content": file_location # You can modify this to store actual content if needed
+        "file_location": file_location 
     }
     document = schemas.DocumentCreate(**document_data)
     return utils.create_document(db=db,document=document)
 
 @app.post("/questions")
-def handle_questions():
-    pass
+async def handle_questions(query:schemas.QuestionSchema,db:Session = Depends(get_db)):
+    data = models.Questions(**query.dict())
+    db.add(data)
+    db.commit()
+    db.refresh(data)
+    return {"message":f"Question has been saved successfully"}
+
+@app.get("/answer/{id}/{qid}")
+async def handle_answer(id:int,qid:int,db:Session = Depends(get_db)):
+    name = db.query(models.Pdf).filter(models.Pdf.id==id).first()
+    query = db.query(models.Questions).filter(models.Questions.id==qid).first()
+    file_location = f"documents/{name.filename}"
+    print(file_location)
+    #read the file contents
+    with open(file_location,"rb") as f:
+        pdf = PdfReader(f)
+        print(utils.read_and_store_document(pdf,query.question,name))

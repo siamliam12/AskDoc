@@ -5,14 +5,20 @@ from typing import Optional
 class PdfSchema(BaseModel):
     id:Optional[int] = None
     filename: str
-    content: str
+    file_location: str
 
 class DocumentCreate(PdfSchema):
     filename: str
-    content: str
+    file_location: str
 
 class Document(PdfSchema):
     id:Optional[int] = None
     upload_date: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class QuestionSchema(BaseModel):
+    id:Optional[int] = None
+    pdf_id :str
+    question : str
+    created_at :datetime
