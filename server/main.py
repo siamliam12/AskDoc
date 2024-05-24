@@ -59,4 +59,4 @@ async def handle_answer(id:int,qid:int,db:Session = Depends(get_db)):
     #read the file contents
     with open(file_location,"rb") as f:
         pdf = PdfReader(f)
-        print(utils.read_and_store_document(pdf,query.question,name))
+        return {"Answer":utils.read_and_store_document(pdf,query.question,name)}
