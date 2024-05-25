@@ -8,10 +8,25 @@ import models, schemas
 from database import SessionLocal, engine
 import os
 from PyPDF2 import PdfReader 
-
+from fastapi.middleware.cors import CORSMiddleware
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+# List of origins that are allowed to make requests to this API.
+origins = [
+    "http://localhost",
+    "http://localhost:3000",  # If you are running your frontend on localhost:3000
+    "http://localhost:5173/",
+    "*"  # Replace with your frontend domain
+    # Add any other origins as needed
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Dependency to get the DB session
 def get_db():
@@ -48,7 +63,7 @@ async def handle_questions(query:schemas.QuestionSchema,db:Session = Depends(get
     db.add(data)
     db.commit()
     db.refresh(data)
-    return {"message":f"Question has been saved successfully"}
+    return {"data":f"{data.id}"}
 
 @app.get("/answer/{id}/{qid}")
 async def handle_answer(id:int,qid:int,db:Session = Depends(get_db)):

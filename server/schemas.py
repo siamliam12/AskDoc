@@ -21,4 +21,4 @@ class QuestionSchema(BaseModel):
     id:Optional[int] = None
     pdf_id :str
     question : str
-    created_at :datetime
+    created_at :Optional[datetime] = None
