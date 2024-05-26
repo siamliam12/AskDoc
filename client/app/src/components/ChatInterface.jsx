@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import styled from 'styled-components';
+import LoadingSpinner from './Spinner'; 
 
 const ChatContainer = styled.div`
   display: flex;
@@ -81,31 +82,33 @@ const SendButton = styled.button`
 const ChatInterface = ({ pdfId }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-
+  const [loading, setLoading] = useState(false); // Add loading state
   const handleSend = async () => {
     if (input.trim()) {
       const userMessage = { text: input, isUser: true };
-      setMessages([...messages, userMessage]);
-
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+      setLoading(true); // Set loading to true
       try {
         // Send the question to the backend with pdfId
         const questionResponse = await fetch('http://127.0.0.1:8000/questions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: input, pdf_id:String(pdfId) }), // Include pdfId
+          body: JSON.stringify({ question: input, pdf_id: String(pdfId) }), // Convert pdfId to string
         });
 
         if (questionResponse.ok) {
           const questionData = await questionResponse.json();
-          const questionId = questionData.question_id;
+          const questionId = questionData.data;
+          console.log(questionId)
 
           // Get the answer from the backend using pdfId and questionId
           const answerResponse = await fetch(`http://127.0.0.1:8000/answer/${pdfId}/${questionId}`);
 
           if (answerResponse.ok) {
             const answerData = await answerResponse.json();
-            const answerMessage = { text: answerData.answer, isUser: false };
-            setMessages([...messages, userMessage, answerMessage]);
+            console.log(answerData)
+            const answerMessage = { text: answerData.Answer, isUser: false };
+            setMessages((prevMessages) => [...prevMessages, userMessage, answerMessage]);
           } else {
             console.error('Error fetching answer:', answerResponse.statusText);
           }
@@ -116,7 +119,7 @@ const ChatInterface = ({ pdfId }) => {
       } catch (error) {
         console.error('Error:', error);
       }
-
+      setLoading(false); // Set loading to false
       setInput('');
     }
   };
@@ -130,6 +133,7 @@ const ChatInterface = ({ pdfId }) => {
             {msg.text}
           </ChatMessage>
         ))}
+      {loading && <LoadingSpinner />}
       </ChatHistory>
       <ChatInputContainer>
         <ChatInput

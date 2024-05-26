@@ -65,11 +65,8 @@ const Navbar = () => {
 
   return (
     <Nav>
-      <NavLogo>MyApp</NavLogo>
+      <NavLogo>AskDOC</NavLogo>
       <NavLinks id="nav-links">
-        <NavLink href="#home">Home</NavLink>
-        <NavLink href="#about">About</NavLink>
-        <NavLink href="#contact">Contact</NavLink>
       </NavLinks>
       <MenuButton onClick={handleMenuClick}>&#9776;</MenuButton>
     </Nav>
